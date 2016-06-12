@@ -456,8 +456,18 @@ public abstract class DashClockHost {
         public boolean handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_NOTIFY_EXTENSION_LIST_CHANGE:
+                    // DashClock service has a bug return null extension listing references
+                    // Prevent it by ignore those invalid extensions
+                    List<ExtensionListing> eis = new ArrayList<>((List<ExtensionListing>) msg.obj);
+                    int count = eis.size() - 1;
+                    for (int i = count; i >= 0; i--) {
+                        if (eis.get(i) == null) {
+                            eis.remove(i);
+                        }
+                    }
+
                     mAvailableExtensions.clear();
-                    mAvailableExtensions.addAll((List<ExtensionListing>) msg.obj);
+                    mAvailableExtensions.addAll(eis);
                     mNonWorldReadableExtensionsVisible = msg.arg1 == 0;
                     onAvailableExtensionsChanged();
                     return true;
